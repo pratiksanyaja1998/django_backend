@@ -2,6 +2,11 @@ from rest_framework import serializers
 from user.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from rest_framework.authtoken.models import Token
+from rest_framework.utils.serializer_helpers import (
+    BindingDict, BoundField, JSONBoundField, NestedBoundField, ReturnDict,
+    ReturnList
+)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -12,10 +17,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    token = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('password', 'password2', 'username', 'first_name', 'last_name')
+        fields = ('password', 'password2', 'username', 'first_name', 'last_name', 'token')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}
@@ -26,6 +32,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
 
         return attrs
+    @property
+    def data(self):
+        ret = super().data
+        ret['token'] = self.token
+        return ReturnDict(ret, serializer=self)
 
     def create(self, validated_data):
         user = User.objects.create(
@@ -38,6 +49,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
 
+        token, created = Token.objects.get_or_create(user=user)
+        self.token = token.key
+        validated_data['token'] = token.key
         return user
 
 

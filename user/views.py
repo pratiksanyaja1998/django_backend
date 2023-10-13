@@ -27,6 +27,12 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
+    # def post(self, request, *args, **kwargs):
+    #     res = self.create(request, *args, **kwargs)
+    #     # token, created = Token.objects.get_or_create(user=res.data)
+    #     # res.data['token'] = token.key
+    #     return res
+
 
 class ChangePasswordView(generics.UpdateAPIView):
 
