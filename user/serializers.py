@@ -36,6 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def data(self):
         ret = super().data
         ret['token'] = self.token
+        ret['is_superuser'] = False
         return ReturnDict(ret, serializer=self)
 
     def create(self, validated_data):
