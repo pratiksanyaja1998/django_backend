@@ -1,4 +1,5 @@
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.pagination import LimitOffsetPagination
 from .serializers import RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer, ListUserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
@@ -45,9 +46,9 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = ListUserSerializer
+    pagination_class = LimitOffsetPagination
 
 
-#
 #
 # class LogoutView(APIView):
 #     permission_classes = (IsAuthenticated,)
@@ -62,13 +63,3 @@ class UserListView(generics.ListAPIView):
 #         except Exception as e:
 #             return Response(status=status.HTTP_400_BAD_REQUEST)
 #
-#
-# class LogoutAllView(APIView):
-#     permission_classes = (IsAuthenticated,)
-#
-#     def post(self, request):
-#         tokens = OutstandingToken.objects.filter(user_id=request.user.id)
-#         for token in tokens:
-#             t, _ = BlacklistedToken.objects.get_or_create(token=token)
-#
-#         return Response(status=status.HTTP_205_RESET_CONTENT)
