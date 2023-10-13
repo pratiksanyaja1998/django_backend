@@ -1,12 +1,24 @@
+from rest_framework.authtoken.views import ObtainAuthToken
 from .serializers import RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
-from django.contrib.auth.models import User
+from user.models import User
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework.authtoken.models import Token
+
+
+class LoginView(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key,})
 
 
 class RegisterView(generics.CreateAPIView):

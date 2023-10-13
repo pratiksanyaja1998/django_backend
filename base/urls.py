@@ -24,5 +24,5 @@ schema_view = get_swagger_view(title='Django API')
 urlpatterns = [
     path('', schema_view),
     path('admin/', admin.site.urls),
-    path('auth/', include('auth.urls')),
+    path('user/', include('user.urls')),
 ]
