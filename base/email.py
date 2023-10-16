@@ -44,11 +44,11 @@ def account_email_thread(user, email_type):
             'base_url': "http://localhost:3000"
         }
 
-        msg = EmailMultiAlternatives(subject, '', settings.EMAIL_FROM, [user.email])
+        msg = EmailMultiAlternatives(subject, '', settings.EMAIL_FROM, [user.username])
         msg.attach_alternative(tpl.render(d), "text/html")
         msg.send()
 
-        print("Email sent for "+email_type + "on "+user.email)
+        print("Email sent for "+email_type + "on "+user.username)
     except Exception as e:
         admins_logger.exception(e)
         print(e)
