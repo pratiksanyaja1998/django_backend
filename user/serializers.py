@@ -1,4 +1,4 @@
-from coreapi.compat import force_text
+from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import get_user_model
 from django.utils.encoding import DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
@@ -6,6 +6,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator as token_generator
+
+from base.email import send_account_email
 from user.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -228,7 +230,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         #     pass
         user = get_object_or_404(get_user_model(), username=data.get('username'))
         print("Need to send email to user ->>>")
-        # send_account_email(user, email_type='forgot_password')
+        send_account_email(user, email_type='forgot_password')
         return data
 
 
@@ -249,7 +251,7 @@ class ResetPasswordSerializer(serializers.Serializer):
         uid = url_params.get('uid')
         token = url_params.get('token')
         try:
-            user_id = force_text(urlsafe_base64_decode(uid))
+            user_id = force_str(urlsafe_base64_decode(uid))
             user = get_user_model().objects.get(id=user_id)
         except get_user_model().DoesNotExist:
             raise ValidationError(detail='User does not exist')
@@ -262,7 +264,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             self.user = user
             return data
         else:
-            # send_account_email(user.pk, email_type='forgot_password')
+            send_account_email(user.pk, email_type='forgot_password')
             raise ValidationError(detail='Link was expired. Please check your inbox again.')
 
     def validate_new_password(self, new_password):

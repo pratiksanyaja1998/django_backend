@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+
+<h5>Hi <b>{{ user.first_name}} {{ user.last_name }}</b></h5>
+
+<p>Someone has requested to create an account using your email address. If this isn't you, then ignore this email.</p>
+<p>Please click <a href="{{ base_url }}/user/verify-email/{{ uid }}/{{ token }}">here</a>
+    to verify your account
+</p>
+
+<p>Thanks</p>
+
+</body>
+</html>
