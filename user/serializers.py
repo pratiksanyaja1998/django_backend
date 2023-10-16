@@ -1,4 +1,11 @@
+from coreapi.compat import force_text
+from django.contrib.auth import get_user_model
+from django.utils.encoding import DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from user.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -163,6 +170,7 @@ class ListUserSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class UpdateUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
 
@@ -200,3 +208,71 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    username = serializers.EmailField(required=True)
+
+    class Meta:
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = self.context['request']
+
+    def validate(self, data):
+        # try:
+        # user = get_user_model().objects.get_or_404(email=data.get('email'))
+        # send_email(user.pk, email_type='forgot_password')
+        # except get_user_model().DoesNotExist:
+        #     pass
+        user = get_object_or_404(get_user_model(), username=data.get('username'))
+        print("Need to send email to user ->>>")
+        # send_account_email(user, email_type='forgot_password')
+        return data
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    class Meta:
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
+        self.request = self.context['request']
+
+    def validate(self, data):
+        url_params = self.context['url_params']
+        uid = url_params.get('uid')
+        token = url_params.get('token')
+        try:
+            user_id = force_text(urlsafe_base64_decode(uid))
+            user = get_user_model().objects.get(id=user_id)
+        except get_user_model().DoesNotExist:
+            raise ValidationError(detail='User does not exist')
+        except DjangoUnicodeDecodeError:
+            raise ValidationError(detail='Link was expired. Please resend link from forgot password')
+
+        check_token = token_generator.check_token(user, token)
+
+        if check_token:
+            self.user = user
+            return data
+        else:
+            # send_account_email(user.pk, email_type='forgot_password')
+            raise ValidationError(detail='Link was expired. Please check your inbox again.')
+
+    def validate_new_password(self, new_password):
+        data = self.initial_data
+        if new_password != data.get('confirm_password'):
+            raise ValidationError('Passwords do not match.')
+
+        if validate_password(new_password) is None:
+            return new_password
+
+    def reset_password(self):
+        self.user.set_password(self.validated_data.get('new_password'))
+        self.user.save()

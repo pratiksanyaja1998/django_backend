@@ -1,6 +1,9 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.pagination import LimitOffsetPagination
-from .serializers import RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer, ListUserSerializer, InviteUserSerializer
+from .serializers import (RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer, ListUserSerializer,
+                          InviteUserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 from user.models import User
@@ -88,3 +91,33 @@ class InviteUserView(generics.CreateAPIView):
 #         except Exception as e:
 #             return Response(status=status.HTTP_400_BAD_REQUEST)
 #
+
+
+class ForgotPassword(generics.GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'message': 'Password reset link has been sent to your inbox.'})
+
+
+sensitive_post_method = sensitive_post_parameters('new_password', 'confirm_password')
+
+
+@method_decorator(sensitive_post_method, name='dispatch')
+class ResetPassword(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.reset_password()
+        return Response({'message': 'Your password has been reset.'})
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['url_params'] = self.kwargs
+        return context
+
+
