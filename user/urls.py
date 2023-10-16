@@ -1,5 +1,5 @@
 from django.urls import path
-from user.views import RegisterView, ChangePasswordView, UpdateProfileView, UserListView, LoginView
+from user.views import RegisterView, ChangePasswordView, UpdateProfileView, UserListView, LoginView, InviteUserView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('change/password/<int:pk>/', ChangePasswordView.as_view(), name='user_change_password'),
     path('update/profile/<int:pk>/', UpdateProfileView.as_view(), name='user_update_profile'),
     path('list/', UserListView.as_view(), name="user_list"),
+    path('invite/', InviteUserView.as_view(), name="user_invite")
     # path('logout/', LogoutView.as_view(), name='user_logout'),
 ]
 

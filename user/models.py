@@ -75,6 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # phone = models.CharField(max_length=15, unique=True)
     # gender = models.CharField(choices=GENDER_TYPE, max_length=8, default='male')
     # photo = models.ImageField(upload_to=get_profile_path, help_text='cover photo', blank=True)
+    invitation_code = models.CharField(null=True, max_length=100, blank=True)
 
     USERNAME_FIELD = 'username'
     objects = UserManager()

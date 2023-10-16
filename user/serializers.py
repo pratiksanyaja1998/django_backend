@@ -21,10 +21,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('password', 'password2', 'username', 'first_name', 'last_name', 'token')
+        fields = ('password', 'password2', 'username', 'first_name', 'last_name', 'token', 'invitation_code')
         extra_kwargs = {
             'first_name': {'required': True},
-            'last_name': {'required': True}
+            'last_name': {'required': True},
+            'invitation_code': {'required': False}
         }
 
     def validate(self, attrs):
@@ -53,6 +54,39 @@ class RegisterSerializer(serializers.ModelSerializer):
         token, created = Token.objects.get_or_create(user=user)
         self.token = token.key
         validated_data['token'] = token.key
+        return user
+
+
+class InviteUserSerializer(serializers.ModelSerializer):
+    username = serializers.EmailField(
+            required=True,
+            validators=[UniqueValidator(queryset=User.objects.all())]
+            )
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', )
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
+
+    @property
+    def data(self):
+        ret = super().data
+        ret['is_superuser'] = False
+        return ReturnDict(ret, serializer=self)
+
+    def create(self, validated_data):
+        user = User.objects.create(
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            # is_active=True
+            invitation_code='qwerty1234'
+        )
+        user.save()
+
         return user
 
 
