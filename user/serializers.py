@@ -18,10 +18,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
     token = serializers.CharField(read_only=True)
+    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('password', 'password2', 'username', 'first_name', 'last_name', 'token', 'invitation_code')
+        fields = ('password', 'password2', 'username', 'first_name', 'last_name', 'token', 'invitation_code', 'id')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
@@ -38,6 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         ret = super().data
         ret['token'] = self.token
         ret['is_superuser'] = False
+        # ret['id'] = self.id
         return ReturnDict(ret, serializer=self)
 
     def create(self, validated_data):
@@ -54,6 +56,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         token, created = Token.objects.get_or_create(user=user)
         self.token = token.key
         validated_data['token'] = token.key
+        validated_data['id'] = user.pk
         return user
 
 
@@ -114,7 +117,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = self.context['request'].user
 
-        if user.pk != instance.pk:
+        if user.pk != instance.pk or user.is_staff is True:
             raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
 
         instance.set_password(validated_data['password'])
