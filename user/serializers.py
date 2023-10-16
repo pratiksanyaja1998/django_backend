@@ -65,11 +65,11 @@ class InviteUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', )
-        extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-        }
+        fields = ('username', )
+        # extra_kwargs = {
+        #     'first_name': {'required': True},
+        #     'last_name': {'required': True},
+        # }
 
     @property
     def data(self):
@@ -80,8 +80,8 @@ class InviteUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create(
             username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            # first_name=validated_data['first_name'],
+            # last_name=validated_data['last_name'],
             # is_active=True
             invitation_code='qwerty1234'
         )
