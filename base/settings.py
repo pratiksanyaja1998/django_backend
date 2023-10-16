@@ -11,6 +11,15 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+import environ
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+# reading .env file
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -150,12 +159,12 @@ SWAGGER_SETTINGS = {
     },
 }
 
-SENDGRID_API_KEY = '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'
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 # EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
+EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_FROM = 'Notification <pratiksanyaja@gmail.com>'
+EMAIL_FROM = 'pratiksanyaja@gmail.com'
