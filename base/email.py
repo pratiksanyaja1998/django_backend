@@ -33,6 +33,10 @@ def account_email_thread(user, email_type):
             tpl = get_template('mail/forgot_password.html')
             subject = 'Forgot Password'
 
+        if email_type == 'invite_user':
+            tpl = get_template('mail/invite_user.html')
+            subject = 'You are invite'
+
         # if email_type == 'welcome':
         #     tpl = get_template('mail/welcome_user_email.html')
         #     subject = 'Successfully Register'

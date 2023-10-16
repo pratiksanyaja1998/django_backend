@@ -98,7 +98,7 @@ class InviteUserSerializer(serializers.ModelSerializer):
             invitation_code='qwerty1234'
         )
         user.save()
-
+        send_account_email(user, 'invite_user')
         return user
 
 
