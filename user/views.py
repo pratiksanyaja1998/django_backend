@@ -4,7 +4,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.pagination import LimitOffsetPagination
 from .serializers import (RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer, ListUserSerializer,
                           InviteUserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer)
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework import generics
 from user.models import User
 from rest_framework.views import APIView
@@ -54,7 +54,7 @@ class UpdateProfileView(generics.UpdateAPIView):
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsAdminUser)
     serializer_class = ListUserSerializer
     pagination_class = LimitOffsetPagination
 
