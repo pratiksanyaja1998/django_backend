@@ -14,7 +14,9 @@ from rest_framework import status
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework.authtoken.models import Token
 
+sensitive_post_method = sensitive_post_parameters('password', 'password2')
 
+@method_decorator(sensitive_post_method, name='dispatch')
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -26,6 +28,7 @@ class LoginView(ObtainAuthToken):
                          'is_superuser': user.is_superuser, 'id': user.id})
 
 
+@method_decorator(sensitive_post_method, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -39,14 +42,12 @@ class RegisterView(generics.CreateAPIView):
 
 
 class ChangePasswordView(generics.UpdateAPIView):
-
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
 
 
 class UpdateProfileView(generics.UpdateAPIView):
-
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UpdateUserSerializer
@@ -63,34 +64,6 @@ class InviteUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = InviteUserSerializer
-
-# class InviteUserView(APIView):
-#     permission_classes = (IsAuthenticated,)
-#
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data["refresh_token"]
-#             token = RefreshToken(refresh_token)
-#             token.blacklist()
-#
-#             return Response(status=status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-#
-# class LogoutView(APIView):
-#     permission_classes = (IsAuthenticated,)
-#
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data["refresh_token"]
-#             token = RefreshToken(refresh_token)
-#             token.blacklist()
-#
-#             return Response(status=status.HTTP_205_RESET_CONTENT)
-#         except Exception as e:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#
 
 
 class ForgotPassword(generics.GenericAPIView):
@@ -119,5 +92,3 @@ class ResetPassword(generics.GenericAPIView):
         context = super().get_serializer_context()
         context['url_params'] = self.kwargs
         return context
-
-
