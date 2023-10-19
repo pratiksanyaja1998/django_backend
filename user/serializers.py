@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import get_user_model
 from django.utils.encoding import DjangoUnicodeDecodeError
@@ -26,6 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    invitation_code = serializers.CharField(write_only=True, required=False)
     token = serializers.CharField(read_only=True)
     id = serializers.IntegerField(read_only=True)
 
@@ -52,12 +54,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         return ReturnDict(ret, serializer=self)
 
     def create(self, validated_data):
-        user = User.objects.create(
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            is_active=True
-        )
+        if validated_data['invitation_code'] is not None:
+            try:
+                user = get_object_or_404(User,invitation_code=validated_data['invitation_code'])
+            except Http404:
+                raise serializers.ValidationError({"invitation code": "Invitation code is invalid."})
+        else:
+            user = User.objects.create(
+                username=validated_data['username'],
+                first_name=validated_data['first_name'],
+                last_name=validated_data['last_name'],
+                is_active=True
+            )
 
         user.set_password(validated_data['password'])
         user.save()
@@ -95,8 +103,10 @@ class InviteUserSerializer(serializers.ModelSerializer):
             # first_name=validated_data['first_name'],
             # last_name=validated_data['last_name'],
             # is_active=True
-            invitation_code='qwerty1234'
+            # invitation_code='qwerty1234'
         )
+        user.save()
+        user.invitation_code = token_generator.make_token(user)
         user.save()
         send_account_email(user, 'invite_user')
         return user
