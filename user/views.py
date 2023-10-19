@@ -62,7 +62,7 @@ class UserListView(generics.ListAPIView):
 
 class InviteUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsAdminUser)
     serializer_class = InviteUserSerializer
 
 
