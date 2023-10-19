@@ -57,6 +57,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         if validated_data['invitation_code'] is not None:
             try:
                 user = get_object_or_404(User,invitation_code=validated_data['invitation_code'])
+                user.first_name = validated_data['first_name']
+                user.last_name = validated_data['last_name']
+                user.is_active = True
             except Http404:
                 raise serializers.ValidationError({"invitation code": "Invitation code is invalid."})
         else:
