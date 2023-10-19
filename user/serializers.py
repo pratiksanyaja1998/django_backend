@@ -22,7 +22,7 @@ from rest_framework.utils.serializer_helpers import (
 class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.EmailField(
             required=True,
-            validators=[UniqueValidator(queryset=User.objects.all())]
+            # validators=[UniqueValidator(queryset=User.objects.all())]
             )
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
