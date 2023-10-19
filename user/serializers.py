@@ -54,7 +54,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return ReturnDict(ret, serializer=self)
 
     def create(self, validated_data):
-        if validated_data['invitation_code'] is not None:
+        if "invitation_code" in validated_data and validated_data['invitation_code'] is not None:
             try:
                 user = get_object_or_404(User,invitation_code=validated_data['invitation_code'])
                 user.first_name = validated_data['first_name']
